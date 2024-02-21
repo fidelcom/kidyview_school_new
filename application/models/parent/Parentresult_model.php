@@ -1,0 +1,584 @@
+<?php
+
+if (!defined('BASEPATH'))
+    exit('No direct script access allowed');
+
+class Parentresult_model extends CI_Model {
+
+    public function getResultList($schoolID = '', $teacher_id = '', $filterbydate = '', $class_id = '', $subject_id = '', $category = '') {
+        $assignClassId = $this->getAssignedClassId($teacher_id);
+        $sql = 'SELECT r.*,CONCAT(c.class," " ,c.section) as classname,CONCAT(ch.childfname," " ,ch.childmname," " ,ch.childlname) as studentname from result r left join child ch ON r.student_id=ch.id left join class c ON r.class_id=c.id  left join sessions si ON r.session_id=si.id WHERE r.is_approved="approved"';
+        if ($class_id != '') {
+            $sql .= ' AND r.class_id="' . $class_id . '"';
+        } else {
+            $sql .= ' AND r.class_id IN (' . $assignClassId . ')';
+        }
+        $sql .= ' AND si.current_sesion=1';
+        $sql .= ' ORDER BY r.id DESC';
+        $query = $this->db->query($sql);
+        if ($query->num_rows() > 0) {
+            $data_user = $query->result_array();
+            for ($i = 0; $i < count($data_user); $i++) {
+                $termData = orderByTermsList($schoolID);
+                if (!empty($termData)) {
+                    for ($j = 0; $j < count($termData); $j++) {
+                        $data_user[$i]['classTeacher'] = $this->getClassTeacher($data_user[$i]['class_id']);
+                        $getResultTermData = $this->getResultTermData($data_user[$i]['id'], $termData[$j]->term_id);
+                        $data_user[$i]['termData'][$j] = $getResultTermData;
+                        $data_user[$i]['termData'][$j]['termname'] = $termData[$j]->termname;
+                    }
+                }
+            }
+            return $data_user;
+        } else {
+            return array();
+        }
+    }
+
+    public function getClassTeacher($class_id = '') {
+        $sql = 'SELECT id,CONCAT(t.teacherfname," " ,t.teachermname," " ,t.teacherlname) as teachername FROM teacher t where t.assignclassteacher IN (' . $class_id . ')';
+        $query = $this->db->query($sql);
+        if ($query->num_rows() > 0) {
+            $data_user = $query->row();
+            return $data_user;
+        } else {
+            return '';
+        }
+    }
+
+    public function getResultTermData($result_id = '', $term_id) {
+        $sql = 'SELECT * FROM result_term_data rt where rt.term_id="' . $term_id . '" AND rt.result_id="' . $result_id . '" ORDER BY id';
+        $query = $this->db->query($sql);
+        if ($query->num_rows() > 0) {
+            $data_user = $query->result_array();
+            return $data_user[0];
+        } else {
+            return array();
+        }
+    }
+
+    public function getAssignedClassId($teacher_id = '') {
+        $sql = 'SELECT assignclassteacher FROM teacher t where t.id =' . $teacher_id . '';
+        $query = $this->db->query($sql);
+        if ($query->num_rows() > 0) {
+            $data_user = $query->row('assignclassteacher');
+            return $data_user;
+        } else {
+            return '';
+        }
+    }
+
+    public function getStudentExamDetails($student_id, $school_id) {
+        $where = array('c.schoolId' => $school_id, 'c.id' => $student_id, 'c.status' => 1);
+        $this->db->select('c.id as studentID,CONCAT(c.childfname," ",c.childmname," ",c.childlname) as stud_name,c.childphoto,c.schoolId,p.id as parent_id,CONCAT(p.fatherfname," ",p.fatherlname) as father_name,CONCAT(p.motherfname," ",p.motherlname) as mother_name,c.childclass as class_id,CONCAT(cs.class," ",cs.section) as class,t.id as teacher_id,CONCAT(t.teacherfname," ",t.teachermname," ",t.teacherlname) as teacher_name,r.overall_total_marks,r.overall_marks_obtain,r.overall_grade,r.overall_percent');
+        $this->db->from('child as c');
+        $this->db->join('result as r', 'r.student_id = c.id', 'left');
+        $this->db->join('parent as p', 'p.id = c.parent_id', 'left');
+        $this->db->join('class as cs', 'cs.id = c.childclass', 'left');
+        $this->db->join('teacher as t', 't.id = cs.classteacher', 'left');
+        $this->db->where($where);
+        $query = $this->db->get();
+
+        if ($query->num_rows() > 0) {
+            $studentResultDetails = $query->result_array();
+
+            $studentTermsResult = $this->subjectwiseTermData($student_id, $school_id,'');
+
+            // prd($studentTermsResult);
+            $studentResultDetails = array_map(function($v) use($studentTermsResult) {
+                foreach ($studentTermsResult as $term) {
+
+                    if ($term->student_id == $v['studentID']) {
+                        $v['termListData'][] = $term;
+                    }
+                }
+                return $v;
+            }, $studentResultDetails);
+
+            $dataArray = array(
+                'termsList' => orderByTermsList($school_id),
+                'studentsList' => $studentResultDetails
+            );
+            // prd($dataArray);
+            return $dataArray;
+        } else {
+            return array();
+        }
+    }
+
+    public function subjectwiseTermData($student_id, $school_id,$session_id='') {
+        $where = array('rs.session_id' => $session_id,'rs.student_id' => $student_id, 'rs.is_approved' => 'approved');
+        $this->db->select('rs.*,s.subject');
+        $this->db->from('result_term_subject_data as rs');
+        $this->db->join('subjects as s', 's.id=rs.subject_id', 'inner');
+        $this->db->where($where);
+        $query = $this->db->get();
+        //echo $this->db->last_query();die;
+        $subjectTermData = $query->result();
+        $finalTermResult = array();
+        $totalAssementMarks = 0;
+        $obtainAssementMarks = 0;
+        $finalPercent = 0;
+        $finalGrade = '';
+
+        foreach ($subjectTermData as $key => $value) {
+            $totalAssementMarks = ($value->total_exam_marks) + ($value->total_test_marks) + ($value->total_assignment_marks) + ($value->total_project_marks);
+            $obtainAssementMarks = ($value->obtain_exam_marks) + ($value->obtain_test_marks) + ($value->obtain_assignment_marks) + ($value->obtain_project_marks);
+
+            $finalPercent = round(($obtainAssementMarks / $totalAssementMarks) * 100);
+            $finalGrade = check_grades($school_id, $finalPercent);
+
+            $updateDataArr = array(
+                'total_assessment_marks' => $totalAssementMarks,
+                'obtain_assessment_marks' => $obtainAssementMarks,
+                'assessment_percent' => $finalPercent,
+                'assessment_grade' => $finalGrade
+            );
+
+            $this->db->where(['id' => $value->id, 'subject_id' => $value->subject_id]);
+            $this->db->update('result_term_subject_data', $updateDataArr);
+        }
+        // prd($subjectTermData); 
+        return $subjectTermData ? $subjectTermData : array();
+    }
+
+    public function getSubjectGrandsResult($student_id, $school_id,$session_id='') {
+        $myClassRank = getStudentClassRank($student_id,$session_id);
+        $this->db->select('term_id,student_id,subject_id,sb.subject,SUM(total_exam_marks) as totalTermExam,SUM(obtain_exam_marks) as totalTermObtainExam,SUM(total_test_marks) as totalTermTest,SUM(obtain_test_marks) as totalTermTestObtain,SUM(total_assignment_marks) as totalTermAssign,SUM(obtain_assignment_marks) as totalTermAssignObtain,SUM(total_project_marks) as totalTermProj,SUM(obtain_project_marks) as totalTermProjObtain,SUM(total_assessment_marks) as totalTermAssesment,SUM(obtain_assessment_marks) as totalObtainAssesment');
+        $this->db->from('result_term_subject_data');
+        $this->db->join('subjects as sb', 'sb.id=result_term_subject_data.subject_id', 'inner');
+        $this->db->where('student_id', $student_id);
+        $this->db->where('session_id', $session_id);
+        $this->db->where('is_approved', 'approved');
+        $this->db->group_by('subject_id');
+        $query = $this->db->get();
+        $result = $query->result_array();
+        // prd($result);
+        $finalDataArr = array();
+        $i = 0;
+        foreach ($result as $value) {
+
+            $finalPercent = round(($value['totalObtainAssesment'] / $value['totalTermAssesment']) * 100);
+            $finalGrade = check_grades($school_id, $finalPercent);
+
+            $finalDataArr[$i] = $value;
+            $finalDataArr[$i]['grade'] = $finalGrade;
+            $i++;
+        }
+
+        // Query merge for grand total
+        $this->db->select('term_id,student_id,SUM(total_exam_marks) AS grandExam,
+                        SUM(obtain_exam_marks) AS grandObtainExam,
+                        SUM(total_test_marks) AS grandTest,
+                        SUM(obtain_test_marks) AS grandTestObtain,
+                        SUM(total_assignment_marks) AS grandAssign,
+                        SUM(obtain_assignment_marks) AS grandAssignObtain,
+                        SUM(total_project_marks) AS grandProject,
+                        SUM(obtain_project_marks) AS grandProjObtain,
+                        SUM(total_assessment_marks) AS grandAssesment,
+                        SUM(obtain_assessment_marks) AS grandObtainAssesment');
+        $this->db->from('result_term_subject_data');
+        $this->db->where('student_id', $student_id);
+        $this->db->where('session_id', $session_id);
+        $this->db->where('is_approved', 'approved');
+        $query = $this->db->get();
+        $grandTotal = (array) $query->row();
+       // echo $this->db->last_query();die;
+       // print_r($grandTotal);die;
+        $finalPercent=0;
+        if($grandTotal['grandAssesment']>0){
+        $finalPercent = round(($grandTotal['grandObtainAssesment'] / $grandTotal['grandAssesment']) * 100);
+        }
+        //echo $finalPercent;die;
+        $finalGrade = check_grades($school_id, $finalPercent);
+        $grandTotal['grade'] = $finalGrade;
+        $grandTotal['myClassRank'] = $myClassRank;
+
+        $finalDataArr = ['finalDataArr' => $finalDataArr, 'grandTotal' => $grandTotal];
+        // prd($finalDataArr);
+        return $finalDataArr ? $finalDataArr : array();
+    }
+
+    public function calculateSubjectTermResult($student_id, $school_id,$session_id='') {
+        $this->db->select('is_approved,term_id,student_id,SUM(total_exam_marks) as totalTermExam,SUM(obtain_exam_marks) as totalTermObtainExam,SUM(total_test_marks) as totalTermTest,SUM(obtain_test_marks) as totalTermTestObtain,SUM(total_assignment_marks) as totalTermAssign,SUM(obtain_assignment_marks) as totalTermAssignObtain,SUM(total_project_marks) as totalTermProj,SUM(obtain_project_marks) as totalTermProjObtain,SUM(total_assessment_marks) as totalTermAssesment,SUM(obtain_assessment_marks) as totalObtainAssesment');
+        $this->db->from('result_term_subject_data');
+        $this->db->where('student_id', $student_id);
+        $this->db->where('session_id', $session_id);
+        $this->db->where('is_approved', 'approved');
+        $this->db->group_by('term_id');
+        $query = $this->db->get();
+        $result = $query->result_array();
+        // prd($result);
+        $finalDataArr = array();
+        $i = 0;
+        foreach ($result as $value) {
+
+            $finalPercent = round(($value['totalObtainAssesment'] / $value['totalTermAssesment']) * 100);
+            $finalGrade = check_grades($school_id, $finalPercent);
+
+            $finalDataArr[$i] = $value;
+            $finalDataArr[$i]['grade'] = $finalGrade;
+            $i++;
+        }
+
+        // prd($finalDataArr);
+        return $finalDataArr ? $finalDataArr : array();
+    }
+
+    public function termsList($school_id) {
+        $currentSession_id   = get_current_session($school_id)->id;
+        $where = array('schoolId' => $school_id,'academicsession'=>$currentSession_id, 'status' => '1');
+        $terms = $this->db->select('id,termname,')->where($where)->get('terms')->result_array();
+        if (count($terms) > 0) {
+            $all = array('id' => 'all_terms', 'termname' => 'all_terms');
+            array_push($terms, $all);
+            return (count($terms) > 0 ) ? $terms : array();
+        } else {
+            return array();
+        }
+    }
+
+    public function getStudentsTermsResult($postData) {
+        $term_id = $postData['term_id'];
+        $student_id = $postData['student_id'];
+        $school_id = $this->token->school_id;
+
+        if ($term_id == 'all_terms') {
+            $is_approved = 'approved';
+            $sql = 'SELECT
+			    sd.term_id,CONCAT(c.childfname," ",c.childmname," ",c.childlname) as student,
+			    s.subject,sd.is_approved,sd.reason,
+			    SUM(sd.`total_exam_marks`) AS totalExamMarks,
+			    SUM(sd.`obtain_exam_marks`) AS obtainExamMarks,
+			    SUM(sd.`total_test_marks`) AS totalTestMarks,
+			    SUM(sd.`obtain_test_marks`) AS obtainTestMarks,
+			    SUM(sd.`total_assignment_marks`) AS totalAssignmentMarks,
+			    SUM(sd.`obtain_assignment_marks`) AS obtainAssignmentMarks,
+			    SUM(sd.`total_project_marks`) AS totalProjectMarks,
+			    SUM(sd.`obtain_project_marks`) AS obtainProjectMarks
+			   
+				FROM
+				    `result_term_subject_data` AS sd
+				LEFT JOIN child as c ON c.id = sd.student_id
+				LEFT JOIN subjects as s ON s.id = sd.subject_id
+				WHERE
+				    `student_id` = ' . $student_id . ' AND `sd`.`is_approved` = "' . $is_approved . '"
+				GROUP BY
+				    sd.subject_id ';
+        } else {
+            $sql = 'SELECT
+			    sd.term_id,CONCAT(c.childfname," ",c.childmname," ",c.childlname) as student,
+			    s.subject,sd.is_approved,sd.reason,
+			    SUM(sd.`total_exam_marks`) AS totalExamMarks,
+			    SUM(sd.`obtain_exam_marks`) AS obtainExamMarks,
+			    SUM(sd.`total_test_marks`) AS totalTestMarks,
+			    SUM(sd.`obtain_test_marks`) AS obtainTestMarks,
+			    SUM(sd.`total_assignment_marks`) AS totalAssignmentMarks,
+			    SUM(sd.`obtain_assignment_marks`) AS obtainAssignmentMarks,
+			    SUM(sd.`total_project_marks`) AS totalProjectMarks,
+			    SUM(sd.`obtain_project_marks`) AS obtainProjectMarks
+			   
+				FROM
+				    `result_term_subject_data` AS sd
+				LEFT JOIN child as c ON c.id = sd.student_id
+				LEFT JOIN subjects as s ON s.id = sd.subject_id
+				WHERE
+				    `student_id` = ' . $student_id . ' AND sd.term_id = ' . $term_id . '
+				GROUP BY
+				    sd.subject_id ';
+        }
+
+        $query = $this->db->query($sql);
+         //lq();
+        if ($query->num_rows() > 0) {
+            $result = $query->result_array();
+            // prd($result);
+            $totalResultData = array();
+            $i = 0;
+            $totalMarks = 0;
+            $totalObtainMarks = 0;
+            foreach ($result as $value) {
+                // prd(count($result));
+                $totalResultData[$i] = $value;
+                $totalResultData[$i]['reason'] = !empty($value['reason']) ? $value['reason'] : '';
+                $totalResultData[$i]['totalMarks'] = $value['totalExamMarks'] + $value['totalTestMarks'] + $value['totalAssignmentMarks'] + $value['totalProjectMarks'];
+                $totalResultData[$i]['totalObtainMarks'] = $value['obtainExamMarks'] + $value['obtainTestMarks'] + $value['obtainAssignmentMarks'] + $value['obtainProjectMarks'];
+
+                $finalPercent = round(( $totalResultData[$i]['totalObtainMarks'] / $totalResultData[$i]['totalMarks'] ) * 100);
+                $finalGrade = check_grades($school_id, $finalPercent);
+
+                $totalResultData[$i]['grade'] = !empty($finalGrade) ? $finalGrade : '';
+                $totalResultData[$i]['is_approved'] = !empty($value['is_approved']) ? $value['is_approved'] : '';
+                // prd($totalResultData);
+                $i++;
+            }
+
+            $grandResult = $this->getGrandTotalResult($postData);
+            // lq();
+            // prd($totalResultData);
+            return (count($result) > 0) ? array('result' => $totalResultData, 'grandResult' => $grandResult) : array();
+        } else {
+            return array();
+        }
+    }
+
+    public function getGrandTotalResult($postData) {
+        $school_id = $this->token->school_id;
+        $currentSession_id   = get_current_session($school_id)->id;
+        $term_id = $postData['term_id'];
+        $student_id = $postData['student_id'];
+        $myClassRank = getStudentClassRank($student_id,$currentSession_id);
+
+        if ($term_id == 'all_terms') {
+            $sql = 'SELECT
+				    sd.term_id,CONCAT(c.childfname," ",c.childmname," ",c.childlname) as student,
+				    s.subject,sd.is_approved,sd.reason,
+				    SUM(sd.`total_exam_marks`) AS totalExamMarks,
+				    SUM(sd.`obtain_exam_marks`) AS obtainExamMarks,
+				    SUM(sd.`total_test_marks`) AS totalTestMarks,
+				    SUM(sd.`obtain_test_marks`) AS obtainTestMarks,
+				    SUM(sd.`total_assignment_marks`) AS totalAssignmentMarks,
+				    SUM(sd.`obtain_assignment_marks`) AS obtainAssignmentMarks,
+				    SUM(sd.`total_project_marks`) AS totalProjectMarks,
+				    SUM(sd.`obtain_project_marks`) AS obtainProjectMarks,
+				    SUM(sd.`total_assessment_marks`) AS grandAssesment,
+	                SUM(sd.`obtain_assessment_marks`) AS grandObtainAssesment
+				   
+					FROM
+					    `result_term_subject_data` AS sd
+					LEFT JOIN child as c ON c.id = sd.student_id
+					LEFT JOIN subjects as s ON s.id = sd.subject_id
+					WHERE
+					    `student_id` = ' . $student_id . ' AND `is_approved` = "approved" ';
+        } else {
+
+            $sql = 'SELECT
+				    sd.term_id,CONCAT(c.childfname," ",c.childmname," ",c.childlname) as student,
+				    s.subject,sd.is_approved,sd.reason,
+				    SUM(sd.`total_exam_marks`) AS totalExamMarks,
+				    SUM(sd.`obtain_exam_marks`) AS obtainExamMarks,
+				    SUM(sd.`total_test_marks`) AS totalTestMarks,
+				    SUM(sd.`obtain_test_marks`) AS obtainTestMarks,
+				    SUM(sd.`total_assignment_marks`) AS totalAssignmentMarks,
+				    SUM(sd.`obtain_assignment_marks`) AS obtainAssignmentMarks,
+				    SUM(sd.`total_project_marks`) AS totalProjectMarks,
+				    SUM(sd.`obtain_project_marks`) AS obtainProjectMarks,
+				    SUM(sd.`total_assessment_marks`) AS grandAssesment,
+	                SUM(sd.`obtain_assessment_marks`) AS grandObtainAssesment
+				   
+					FROM
+					    `result_term_subject_data` AS sd
+					LEFT JOIN child as c ON c.id = sd.student_id
+					LEFT JOIN subjects as s ON s.id = sd.subject_id
+					WHERE
+					    `student_id` = ' . $student_id . ' AND sd.term_id = ' . $term_id . ' ';
+        }
+        $query = $this->db->query($sql);
+
+        if ($query->num_rows() > 0) {
+
+            $result = $query->row_array();
+
+            $grandObtainAssesment = !empty($result['grandObtainAssesment']) ? $result['grandObtainAssesment'] : 0;
+            $grandAssesment = !empty($result['grandAssesment']) ? $result['grandAssesment'] : 0;
+            if ($grandObtainAssesment && $grandAssesment) {
+                $finalPercent = round(($grandObtainAssesment / $grandAssesment) * 100);
+                $finalGrade = check_grades($school_id, $finalPercent);
+            } else {
+                $finalPercent = '-';
+                $finalGrade = '-';
+            }
+            $result['grade'] = $finalGrade;
+            $result['myClassRank'] = $myClassRank;
+            $result['reason'] = !empty($result['reason']) ? $result['reason'] : '';
+            $result['term_id'] = !empty($term_id) ? $term_id : '';
+            $result['is_approved'] = !empty($result['is_approved']) ? $result['is_approved'] : '';
+// prd($result);
+            return (count($result) > 0) ? $result : array();
+        } else {
+            return array();
+        }
+    }
+
+    
+    public function getStudentResult($school_id,$student_id,$session_id='') 
+    {
+        $session_id   = get_current_session($school_id)->id;
+        $where = array('child_class.session_id'=>$session_id,'c.schoolId'=>$school_id,'c.id'=>$student_id,'c.status'=>1);
+    	 $this->db->select('
+        c.id as studentID,
+        s.school_name as school_name,
+        s.email as email,
+        s.location as location,
+        s.city as city,
+        s.state as state,
+        s.pincode as pincode,
+        s.pic as school_photo,
+        s.phone as phone,
+        s.signatureImg as principalSign,
+        CONCAT(c.childfname," ",c.childmname," ",c.childlname) as stud_name,
+        c.childphoto,
+        c.childRegisterId as childRegisterId,
+        c.childgender as childgender,
+        c.schoolId,
+        p.id as parent_id,
+        CONCAT(p.fatherfname," ",p.fatherlname) as father_name,
+        CONCAT(p.motherfname," ",p.motherlname) as mother_name,
+        c.childclass as class_id,
+        CONCAT(cs.class," ",cs.section) as class,
+        cs.academicsession as  std_session,
+        t.id as teacher_id,
+        t.signatureImg as signatureImg,
+        CONCAT(t.teacherfname," ",t.teachermname," ",t.teacherlname) as teacher_name,
+        r.overall_total_marks,
+        r.overall_marks_obtain,
+        r.overall_grade');
+    	$this->db->from('child as c');
+        $this->db->join('child_class','c.id=child_class.child_id','left');
+        $this->db->join('school as s', ' c.schoolId=s.id', 'left');
+        $this->db->join('result as r',' c.id=r.student_id','left');
+        $this->db->join('parent as p','p.id = c.parent_id','left');
+    	//$this->db->join('class as cs','cs.id = c.childclass','left');
+    	$this->db->join('teacher as t','t.id = (select id from teacher where schoolId = c.schoolId And assignclassteacher IN(c.childclass) limit 1)','left');
+        $this->db->join('class cs','child_class.class_id=cs.id','left');  
+        $this->db->where($where);
+    	$query = $this->db->get();
+        //echo $this->db->last_query();die;
+        $postData= array('student_id' =>$student_id , 'school_id' =>$school_id, 'session_id' =>$session_id, 'term_id' =>'');
+        $getStudentsActivityTermsResult =$this->getStudentsActivityTermsResult($postData);
+        $getStudentsActivityFinalResult =$this->getStudentsActivityTermsResult(array('student_id' =>$student_id , 'school_id' =>$school_id, 'session_id' =>$session_id, 'term_id' =>'all_terms'));
+        $dataArray['termsList'] = orderByTermsList($school_id,$session_id);
+        $dataArray['getStudentsActivityTermsResult'] = $getStudentsActivityTermsResult;
+        $dataArray['getStudentsActivityFinalResult'] = $getStudentsActivityFinalResult;
+      if($query->num_rows() > 0)
+      {
+              $studentResultDetails = $query->row();
+              $studentTermsResult = $this->subjectwiseTermData($student_id,$school_id,$session_id);
+               //print_r($studentTermsResult);die;
+                $k=0;    
+                foreach ($studentTermsResult as $term) {
+                if ($term->student_id == $studentResultDetails->studentID) {
+                    $studentResultDetails->termListData[$k] = $term;
+                    $k++;
+                }
+                }
+                
+              $final = array();
+              if(!empty($studentResultDetails)) {
+              $final = $this->getSubjectGrandsResult($student_id,$school_id,$session_id); 
+              $subjectTerm = $this->calculateSubjectTermResult($student_id,$school_id,$session_id);  
+              
+              }   
+              
+              $dataArray['studentsList'] = $studentResultDetails;
+              $dataArray['final'] = $final;
+              $dataArray['subjectTerm'] = $subjectTerm;
+              
+      /*
+              $dataArray = array(
+                'termsList'=>orderByTermsList($school_id,$session_id),
+                'studentsList'=>$studentResultDetails,
+                'final'=>$final, 
+                'subjectTerm'=>$subjectTerm,   
+              );
+              */
+                // prd($dataArray);
+            return $dataArray;
+      }
+      else
+      {
+       return array();
+      }
+        
+    }
+    public function getStudentsActivityTermsResult($postData)
+    {
+    	$grantResultArr=array();
+    	$resultArr=array();
+        $term_id = $postData['term_id'];
+        if(isset($postData['student_id']) && $postData['student_id']!=''){
+            $student_id = $postData['student_id'];
+        }else{
+            $student_id = $this->token->student_id;
+        }
+        if(isset($postData['school_id']) && $postData['school_id']!=''){
+            $school_id = $postData['school_id'];
+        }else{
+            $school_id = $this->token->school_id;
+        }
+        if(isset($postData['session_id']) && $postData['session_id']!=''){
+            $session_id = $postData['session_id'];
+        }else{
+            $session_id= get_current_session($school_id)->id;
+        }
+		
+		//$session_id=43;
+		$this->db->select('name');
+		$this->db->from('activities_performance');
+		//$this->db->where('school_id',$school_id);
+		$actData=$this->db->get();
+		$result=$actData->result_array();
+		$activity_key=array('is_beginner','is_intermediate','is_advanced','is_expert');
+		$i=0;
+		if(!empty($result)){
+			$resultArr[$i]['term_id']=$term_id;
+			$resultArr[$i]['subject']="Activities";
+			$resultArr[$i]['is_beginner']=$result[0]['name'];
+			$resultArr[$i]['is_intermediate']=$result[1]['name'];
+			$resultArr[$i]['is_advanced']=$result[2]['name'];
+			$resultArr[$i]['is_expert']=$result[3]['name'];
+			$resultArr[$i]['class_id']='';
+			$resultArr[$i]['subject_id']='';
+			$resultArr[$i]['student_id']='';
+			$resultArr[$i]['remarks']='Remarks';
+
+			if($term_id == 'all_terms')
+				{
+				$sql = 'SELECT sd.is_beginner,sd.is_intermediate,sd.is_advanced,sd.is_expert,CONCAT(c.childfname," ",c.childmname," ",c.childlname) as student,
+				s.subject,sd.is_approved,sd.class_id,sd.student_id,sd.remarks 
+						FROM activities_final_subject_result AS sd
+						LEFT JOIN child as c ON c.id = sd.student_id
+						INNER JOIN (select * from subjects where status=1) as s ON s.id = sd.subject_id
+						WHERE `student_id` = '.$student_id.' AND sd.session_id = '.$session_id.' AND sd.is_approved="approved" order by sd.id ';
+
+			}else{
+				$sql = 'SELECT sd.term_id,is_beginner,is_intermediate,is_advanced,is_expert,CONCAT(c.childfname," ",c.childmname," ",c.childlname) as student,
+				s.subject,sd.is_approved,sd.subject_id,sd.class_id,sd.student_id,sd.remarks 
+						FROM activities_subject_term_result AS sd
+						LEFT JOIN child as c ON c.id = sd.student_id
+                        INNER JOIN (select * from subjects where status=1) as s ON s.id = sd.subject_id';
+                if(isset($this->token->student_id) && $this->token->student_id!=''){
+                    $sql    .= ' WHERE `student_id` = '.$student_id.' AND sd.session_id = '.$session_id.' AND sd.is_approved="approved"';
+                    if(isset($postData['term_id']) && $postData['term_id']!=''){
+                       
+                        $sql    .= " AND sd.term_id = $term_id";
+                    }
+				    $sql    .= ' order by sd.term_id ';
+                }else{
+                $sql    .= ' WHERE `student_id` = '.$student_id.' AND sd.session_id = '.$session_id.' AND sd.is_approved="approved" order by sd.term_id ';
+                                   
+                }
+            }
+            //echo $sql;die;
+			$query=$this->db->query($sql);
+			if($query->num_rows() > 0){
+				$totalResultData=$query->result_array();
+				foreach($totalResultData as $tdaya){
+					array_push($resultArr,$tdaya);
+				}
+				return (count($result) > 0) ? array('result'=>$resultArr,'grandResult'=>array()) : array();
+				/* if($term_id == 'all_terms')
+    			{
+					return (count($result) > 0) ? array('result'=>array(),'grandResult'=>$resultArr) : array();
+				}else{
+					return (count($result) > 0) ? array('result'=>$resultArr,'grandResult'=>array()) : array();
+				}*/
+			}else{
+				return array();
+			}
+    	}else{
+			return array();
+		}
+	}	
+
+}

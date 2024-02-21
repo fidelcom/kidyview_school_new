@@ -1,0 +1,121 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+require APPPATH . '/libraries/REST_Controller.php';
+
+class Gifts extends REST_Controller {
+
+    public $error = array();
+    public $data = array();
+
+    function __construct() {
+        parent::__construct();
+        $this->token->parent_validate();
+        $this->load->library("security");
+        $this->load->library('form_validation');
+        $this->load->model('parent/gift_model');
+        $this->load->helper('common_helper');
+    }    
+    public function index_get(){
+        $data = $this->gift_model->data();
+        $total = $this->gift_model->dataCount();
+        
+        $return['success'] = "true";
+        $return['title'] = "success";
+        $return['message'] = "Record found successfully.";
+        $return['classData'] = $data;
+        $return['total'] = $total;
+        $return['error'] = $this->error;
+        $this->response($return, REST_Controller::HTTP_OK);
+    }
+    public function studentPointsData_get()
+    {
+        $totalPoints = $this->gift_model->pointsData();
+        $allPointsData = $this->gift_model->allPointsData();
+        // prd($totalPoints);
+        // prd($totalPoints);
+        if( count($allPointsData) > 0)
+        {
+            $return['success'] = "true";
+            $return['title'] = "success";
+            $return['message'] = "Record found successfully.";
+            $return['total_points'] = (int)($totalPoints['totalPoints']);
+            $return['data'] = $allPointsData;
+            $return['error'] = $this->error;
+            $this->response($return, REST_Controller::HTTP_OK);
+        }else{
+            $return['success'] = "false";
+            $return['title'] = "failed";
+            $return['message'] = "No record found.";
+            $return['total_points'] = '';
+            $return['data'] = '';
+            $return['error'] = $this->error;
+            $this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+        }
+    }
+    public function redeemPointsGifts_get()
+    {
+        $result = $this->gift_model->redeemPointsGifts();
+        // echo "hi Nidhi"; die;
+        // prd($result);
+        if( count($result) > 0)
+        {
+            $return['success'] = "true";
+            $return['title'] = "success";
+            $return['message'] = "Record found successfully.";
+            $return['data'] = $result;
+            $return['error'] = $this->error;
+            $this->response($return, REST_Controller::HTTP_OK);
+        }else{
+            $return['success'] = "false";
+            $return['title'] = "failed";
+            $return['message'] = "No record found.";
+            $return['data'] = '';
+            $return['error'] = $this->error;
+            $this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+        }
+    }
+    public function giftRewardsPay_post()
+    {
+    	$postData = json_decode(file_get_contents('php://input'), true);
+        if ($postData == '') {
+                $postData = $_POST;
+        }
+        // prd($postData);
+        $result = $this->gift_model->redeemPointsReward($postData);
+        // prd($result);
+        if( $result == 'exceed_points_limit' )
+        {
+        	$return['success'] = "false";
+            $return['title'] = "failed";
+            $return['message'] = "Your redeem points is not sufficient to purchase this gift.";
+            $return['data'] = '';
+            $return['error'] = $this->error;
+            $this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+        
+        }else if( $result == 'insuficient_qty' )
+        {
+        	$return['success'] = "false";
+            $return['title'] = "failed";
+            $return['message'] = "Your selected gift quantity is not available.";
+            $return['data'] = '';
+            $return['error'] = $this->error;
+            $this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+        
+        }else if( $result )
+        {
+            $return['success'] = "true";
+            $return['title'] = "success";
+            $return['message'] = "Gifts rewards achieved successfully.";
+            $return['data'] = '';
+            $return['error'] = $this->error;
+            $this->response($return, REST_Controller::HTTP_OK);
+        }else{
+            $return['success'] = "false";
+            $return['title'] = "failed";
+            $return['message'] = "No reward found.";
+            $return['data'] = '';
+            $return['error'] = $this->error;
+            $this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+        }
+    }
+}

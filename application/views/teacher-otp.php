@@ -1,0 +1,1 @@
+<p>Use <?php echo (isset($otp)) ? $otp : ''; ?> as your login OTP. OTP is confidential.</p>

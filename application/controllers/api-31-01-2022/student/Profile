@@ -1,0 +1,401 @@
+<?php
+	
+	defined('BASEPATH') OR exit('No direct script access allowed');
+	
+	require APPPATH . '/libraries/REST_Controller.php';
+	
+	class Profile extends REST_Controller {
+		
+		public $error = array();
+		public $data = array();
+		
+		public function __construct() {
+			parent::__construct();
+			
+			//$this->token->validate();
+			$this->load->library('form_validation');
+			$this->load->library("security");
+			$this->load->model('students/Student_model');
+			$this->load->library('settings');
+		}
+	public function getStudentDetails_post() {
+		$data = $this->session->userdata('student_data');
+		$id = $data['id'];
+
+		$result = $this->Student_model->getStudentDetails($id);
+
+			if ($result) {
+					$return['success'] = "true";
+					$return['message'] = "Studentn details found.";
+					$return['data'] = $result;
+					$return['error'] = $this->error;
+
+					$this->response($return, REST_Controller::HTTP_OK);
+					} else {
+					$return['success'] = "false";
+					$return['message'] = "Not found.";
+					$return['error'] = $this->error;
+					$return['data'] = $result;
+
+					$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+			}
+		}
+		
+public function changePasswordStudent_post() {
+	$postData = json_decode(file_get_contents('php://input'), true);
+	if ($postData == '') {
+		$postData = $_POST;
+	}
+	$oldPassword = $postData['opsw'];
+	$userDetail = $this->session->all_userdata();
+    $id = $userDetail['student_data']['id'];
+	$studentdata = $this->Student_model->getStudentDetails($id);
+	//echo $studentdata->password;die;
+	if($this->settings->decryptString($studentdata->password)!=$oldPassword){
+		$return['success'] = "false";
+		$return['message'] = "Old password not match.";
+		$return['error'] = $this->error;
+		$return['data'] = 'old paddword';
+		$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+	}
+	$newPassword = $this->settings->encryptString($postData['npsw']);
+	$result = $this->Student_model->changePasswordStudent($oldPassword, $newPassword);
+	
+	if ($result == 1) {
+		$return['success'] = "true";
+		$return['message'] = "Password updated successfully.";
+		$return['data'] = $result;
+		$return['error'] = $this->error;
+		
+		$this->response($return, REST_Controller::HTTP_OK);
+		} else {
+		$return['success'] = "false";
+		$return['message'] = "Password not updated.";
+		$return['error'] = $this->error;
+		$return['data'] = $result;
+		
+		$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+	}
+	}
+public function addStudentHobie_post() {
+	$postData = json_decode(file_get_contents('php://input'), true);
+	if ($postData == '') {
+		$postData = $_POST;
+	}
+	$hdata['hobie_name'] = $postData['hobie'];
+	$data = $this->session->userdata('student_data');
+	$id = $data['id'];
+	$hdata['student_id'] = $id;
+	$checkHobie = $this->Student_model->hobieExist($postData['hobie']);
+	if ($checkHobie) {
+		$return['success'] = "false";
+		$return['message'] = "Hobie Already Exists.";
+		$return['error'] = $this->error;
+		$return['data'] = $this->data;
+		$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+	}
+	$add = $this->Student_model->addStudentHobie($id,$hdata);
+		if ($add) {
+				$return['success'] = "true";
+				$return['message'] = "Hobie added succefully.";
+				$return['data'] = $add;
+				$return['error'] = $this->error;
+
+				$this->response($return, REST_Controller::HTTP_OK);
+				} else {
+				$return['success'] = "false";
+				$return['message'] = "Not found.";
+				$return['error'] = $this->error;
+				$return['data'] = $add;
+
+				$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+		}
+	}
+	public function getStudentHobieList_post() {
+		$data = $this->session->userdata('student_data');
+		$id = $data['id'];
+
+		$result = $this->Student_model->getStudentHobieList($id);
+
+			if ($result) {
+					$return['success'] = "true";
+					$return['message'] = "Student hobies found.";
+					$return['data'] = $result;
+					$return['error'] = $this->error;
+
+					$this->response($return, REST_Controller::HTTP_OK);
+					} else {
+					$return['success'] = "false";
+					$return['message'] = "Not found.";
+					$return['error'] = $this->error;
+					$return['data'] = $result;
+
+					$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+			}
+	}
+	public function hobieDelete_post() {
+		$postData = json_decode(file_get_contents('php://input'), true);
+		if ($postData == '') {
+			$postData = $_POST;
+		}
+		$id = $postData['id'];
+		$where=array(
+		'id'=>$id
+		);
+		$tbl_name='student_hobie';
+		$result = $this->Student_model->delete($where,$tbl_name);
+		if ($result) {
+			$return['success'] = "true";
+			$return['message'] = "Hobie deleted successfully.";
+			$return['data'] = $result;
+			$return['error'] = $this->error;
+			
+			$this->response($return, REST_Controller::HTTP_OK);
+			} else {
+			$return['success'] = "false";
+			$return['message'] = "Something went wrong.";
+			$return['error'] = $this->error;
+			$return['data'] = $result;
+			$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+		}
+	}
+	public function addStudentQuote_post() {
+		$postData = json_decode(file_get_contents('php://input'), true);
+		if ($postData == '') {
+			$postData = $_POST;
+		}
+		$hdata['quote_name'] = $postData['quote'];
+		$data = $this->session->userdata('student_data');
+		$id = $data['id'];
+		$hdata['student_id'] = $id;
+		$checkQuote = $this->Student_model->quoteExist($postData['quote']);
+		if ($checkQuote) {
+			$return['success'] = "false";
+			$return['message'] = "Quote Already Exists.";
+			$return['error'] = $this->error;
+			$return['data'] = $this->data;
+			$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+		}
+		$add = $this->Student_model->addStudentQuote($id,$hdata);
+			if ($add) {
+					$return['success'] = "true";
+					$return['message'] = "Quote added succefully.";
+					$return['data'] = $add;
+					$return['error'] = $this->error;
+	
+					$this->response($return, REST_Controller::HTTP_OK);
+					} else {
+					$return['success'] = "false";
+					$return['message'] = "Not found.";
+					$return['error'] = $this->error;
+					$return['data'] = $add;
+	
+					$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+			}
+		}
+		public function getStudentQuoteList_post() {
+			$data = $this->session->userdata('student_data');
+			$id = $data['id'];
+	
+			$result = $this->Student_model->getStudentQuoteList($id);
+	
+				if ($result) {
+						$return['success'] = "true";
+						$return['message'] = "Studentn quote found.";
+						$return['data'] = $result;
+						$return['error'] = $this->error;
+	
+						$this->response($return, REST_Controller::HTTP_OK);
+						} else {
+						$return['success'] = "false";
+						$return['message'] = "Not found.";
+						$return['error'] = $this->error;
+						$return['data'] = $result;
+	
+						$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+				}
+		}
+	public function quoteDelete_post() {
+		$postData = json_decode(file_get_contents('php://input'), true);
+		if ($postData == '') {
+			$postData = $_POST;
+		}
+		$id = $postData['id'];
+		$where=array(
+		'id'=>$id
+		);
+		$tbl_name='student_quote';
+		$result = $this->Student_model->delete($where,$tbl_name);
+		if ($result) {
+			$return['success'] = "true";
+			$return['message'] = "Quote deleted successfully.";
+			$return['data'] = $result;
+			$return['error'] = $this->error;
+			
+			$this->response($return, REST_Controller::HTTP_OK);
+			} else {
+			$return['success'] = "false";
+			$return['message'] = "Something went wrong.";
+			$return['error'] = $this->error;
+			$return['data'] = $result;
+			$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+		}
+	}
+	public function updateStudentHobie_post() {
+		$postData = json_decode(file_get_contents('php://input'), true);
+		if ($postData == '') {
+			$postData = $_POST;
+		}
+		$hdata['hobie_name'] = $postData['hobie_name'];
+		$id = $postData['id'];
+		$checkHobie = $this->Student_model->hobieExist($postData['hobie_name']);
+		if ($checkHobie) {
+			$return['success'] = "false";
+			$return['message'] = "Hobie Already Exists.";
+			$return['error'] = $this->error;
+			$return['data'] = $checkHobie;
+			$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+		}
+		$add = $this->Student_model->updateStudentHobie($id,$hdata);
+			if ($add) {
+					$return['success'] = "true";
+					$return['message'] = "Hobie updated succefully.";
+					$return['data'] = $add;
+					$return['error'] = $this->error;
+	
+					$this->response($return, REST_Controller::HTTP_OK);
+					} else {
+					$return['success'] = "false";
+					$return['message'] = "Not found.";
+					$return['error'] = $this->error;
+					$return['data'] = $add;
+	
+					$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+			}
+		}
+		public function updateStudentQuote_post() {
+			$postData = json_decode(file_get_contents('php://input'), true);
+			if ($postData == '') {
+				$postData = $_POST;
+			}
+			$hdata['quote_name'] = $postData['quote_name'];
+			$id = $postData['id'];
+			$checkQuote = $this->Student_model->quoteExist($postData['quote_name']);
+			if ($checkQuote) {
+				$return['success'] = "false";
+				$return['message'] = "Quote Already Exists.";
+				$return['error'] = $this->error;
+				$return['data'] = $checkQuote;
+				$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+			}
+			$add = $this->Student_model->updateStudentQuote($id,$hdata);
+				if ($add) {
+						$return['success'] = "true";
+						$return['message'] = "Quote updated succefully.";
+						$return['data'] = $add;
+						$return['error'] = $this->error;
+		
+						$this->response($return, REST_Controller::HTTP_OK);
+						} else {
+						$return['success'] = "false";
+						$return['message'] = "Not found.";
+						$return['error'] = $this->error;
+						$return['data'] = $add;
+		
+						$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+				}
+		}
+	public function getTeacherList_post() {
+		$postData = json_decode(file_get_contents('php://input'), true);
+		if ($postData == '') {
+			$postData = $_POST;
+		}
+		$classID=$postData['classID'];
+		$result = $this->Student_model->getTeacherList($classID);
+			if ($result) {
+					$return['success'] = "true";
+					$return['message'] = "Teacher found.";
+					$return['data'] = $result;
+					$return['error'] = $this->error;
+
+					$this->response($return, REST_Controller::HTTP_OK);
+					} else {
+					$return['success'] = "false";
+					$return['message'] = "Not found.";
+					$return['error'] = $this->error;
+					$return['data'] = $result;
+					$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+			}
+	}
+	public function getStudentList_post() {
+		$postData = json_decode(file_get_contents('php://input'), true);
+		if ($postData == '') {
+			$postData = $_POST;
+		}
+		$data = $this->session->userdata('student_data');
+		$id = $data['id'];
+		$classID=$postData['classID'];
+		$result = $this->Student_model->getStudentList($classID,$id);
+			if ($result) {
+					$return['success'] = "true";
+					$return['message'] = "Teacher found.";
+					$return['data'] = $result;
+					$return['error'] = $this->error;
+
+					$this->response($return, REST_Controller::HTTP_OK);
+					} else {
+					$return['success'] = "false";
+					$return['message'] = "Not found.";
+					$return['error'] = $this->error;
+					$return['data'] = $result;
+					$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+			}
+	}
+	public function getTeacherDetails_post() {
+		$postData = json_decode(file_get_contents('php://input'), true);
+		if ($postData == '') {
+			$postData = $_POST;
+		}
+		$id=$postData['id'];
+		$classID=$postData['classID'];
+		$result = $this->Student_model->getTeacherDetails($id,$classID);;
+			if ($result) {
+					$return['success'] = "true";
+					$return['message'] = "Teacher details found.";
+					$return['data'] = $result;
+					$return['error'] = $this->error;
+
+					$this->response($return, REST_Controller::HTTP_OK);
+					} else {
+					$return['success'] = "false";
+					$return['message'] = "Not found.";
+					$return['error'] = $this->error;
+					$return['data'] = $result;
+
+					$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+			}
+	}
+	public function getStudentDetailsById_post() {
+		$postData = json_decode(file_get_contents('php://input'), true);
+		if ($postData == '') {
+			$postData = $_POST;
+		}
+		$id=$postData['id'];
+		$classID=$postData['classID'];
+		$result = $this->Student_model->getStudentDetailsById($id,$classID);;
+			if ($result) {
+					$return['success'] = "true";
+					$return['message'] = "Student details found.";
+					$return['data'] = $result;
+					$return['error'] = $this->error;
+					$this->response($return, REST_Controller::HTTP_OK);
+					} else {
+					$return['success'] = "false";
+					$return['message'] = "Not found.";
+					$return['error'] = $this->error;
+					$return['data'] = $result;
+					$this->response($return, REST_Controller::HTTP_BAD_REQUEST);
+			}
+	}
+	
+}

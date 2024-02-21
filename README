@@ -1,0 +1,90 @@
+***** NOTE ******
+There is a new updated version of this on my other GitHub repository. https://github.com/ericbae/XTA2 It is a basically more robust and refined version and also integrates with OpenID. Please try to use that one instead of this. A new demo page is also available at http://xta2.ericbae.com, instead of http://www.naturish.com - this domain might not last much longer so please use the new one. Thanks!
+*****************************************
+
+
+Welcome to the Tank-Auth---3rd-Party-Authentication-Project wiki!
+
+# What is this?
+Firstly, the project name is rather mouthful. So let's abbreviate it to "XTA" for "eXtending Tank Auth". Exactly what are we extending then? For those who use CodeIgniter PHP framework, Tank Auth is an authentication library that is easy to use and serves all the necessary basic features that are required for Web authentication. While there are a number of other tools available, it is a preferred choice by many CodeIgniter users.
+
+On the other hand, it is sometimes useful to let users to "register" and "login" to your site using some of their existing accounts to other services - namely, Facebook, Twitter and Google. 
+
+Therefore, XTA project extends Tank Auth tool to integrate these third-party authentication mechanisms, so you can use them for your website. 
+
+# Note
+- The XTA project is currently supporting Facebook, Twitter and Google Friend Connect (GFC). In turn, GFC itself allows you to use your Yahoo, AOL or OpenID accounts as well. There might be a few more incremental changes in the future depending on how these third party systems changes. Or even maybe implementing LinkedIn or Yahoo directly.
+- I tried to maintain the project as "minimal" or "basic" as possible, so you can modify at your freedom.
+
+# Tools used for XTA
+CodeIgniter 2.0.1 - http://codeigniter.com/
+Tank Auth 1.0.9 - http://www.konyukhov.com/soft/tank_auth/
+Facebook plug-in - http://kentislearningcodeigniter.com/facebook_connect/page5
+Twitter plug-in - http://www.haughin.com/code/twitter/
+
+# Instructions
+- Currently, XTA is integrated with Facebook and Twitter. When others are integrated, we'll modify this instruction accordingly.
+
+## Step 1
+Download XTA project, unzip. I used Eclipse IDE for this, so you'll see a ".project" file, which you can import directly as an Eclipse project. I'm sure it'll be straight-forward for others to import into their project workspace.
+
+## Step 2 - Setting up 3rd party authentication plug-ins
+We will be setting up Facebook and Twitter below.
+
+### Step 2.1 - Setting for for Facebook
+Have you registered your website as a Facebook application? Well, you need to do that. So head over to Facebook and register a Facebook application and fill in the necessary details. See here : http://developers.facebook.com/setup/
+
+### Step 2.2
+You need to modify "config.php" file. At the bottom of this file, there are 3 settings in regards to Facebook, which are
+
+> $config['facebook_app_id'] = '';
+> $config['facebook_app_key'] = '';
+> $config['facebook_app_secret'] = '';
+
+You'll need to fill in the above with your own Facebook app details.
+
+### Step 2.3 - Setting up Twitter
+I'm assuming you already have a Twitter account. Otherwise, you should. Register yourself with a new Twitter account at http://www.twitter.com. Once you have your account, you can register a new Twitter application at https://dev.twitter.com/apps. Following list shows you what you should fill in when you register a new Twitter application.
+
+Application Website : This is the website that will be using the Twitter authentication. In my demo app for XTA, it is "http://www.naturish.com"
+
+Application Type : Browser
+
+Callback URL : This is configurable at the app level, meaning that you can set this up when you plug in Twitter with Tank Auth. So you don't need to worry about it too much. I just set it up same as application website.
+
+Default Access Type : Let's set it as "Read & Write". It just gives you more power to do things. 
+
+### Step 2.4
+Once you set that up, make sure you grab your "consumer key" and "consumer secret" and put them in the config.php file of your CodeIgniter project as below.
+
+$config['twitter_consumer_key'] = '';
+$config['twitter_consumer_key_secret'] = '';
+
+That should be about all the configurations we need.
+
+### Step 2.5 - Setting up Google Friend Connect (GFC)
+You must first register your website with GFC at 
+
+http://www.google.com/friendconnect/
+
+Follow the instructions provided on the site to register your site and make sure you grab your application ID.
+
+### Steo 2.6
+Once you have your ID, then open up config.php file and fill in the following config variable.
+
+$config['google_app_id'] = '';
+
+You are now good to go with Google Friend Connect!
+
+## Step 3
+If you don't have a database for your website yet, now is the good time to do it. For a testing purpose, I created a database called "xta". You can see this in config/database.php file. If you have your DB already, then let's move on.
+
+## Step 4
+You should see a schema.sql file inside the zip file. This file has all the queries that will generate tables that you need. Run these queries and you'll get 5 new tables. In fact, this schema file is very similar to the one that's provided by Tank Auth. 
+
+The only difference is there are now new columns in "user_profiles" table called "facebook_id", "twitter_id" and "gfc_id" into which we will insert user's Facebook, Twitter or Google ID, depending on which plug-in they use. 
+
+## Step 5
+You can upload all your files to your server now and hopefully, things will run as planned. You should go to "www.yourdomain.com/index.php/auth" then it will open up a login page and you will also see a Facebook connect, Twitter login and Google Friend Connect buttons. 
+
+## There is a sample demo application available at http://www.naturish.com
