@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="MessDetectorOptionsConfiguration">
+    <option name="transferred" value="true" />
+  </component>
+  <component name="PHPCSFixerOptionsConfiguration">
+    <option name="transferred" value="true" />
+  </component>
+  <component name="PHPCodeSnifferOptionsConfiguration">
+    <option name="highlightLevel" value="WARNING" />
+    <option name="transferred" value="true" />
+  </component>
+  <component name="PhpIncludePathManager">
+    <include_path>
+      <path value="$PROJECT_DIR$/vendor/twilio/sdk" />
+      <path value="$PROJECT_DIR$/vendor/psr/log" />
+      <path value="$PROJECT_DIR$/vendor/myclabs/deep-copy" />
+      <path value="$PROJECT_DIR$/vendor/mpdf/mpdf" />
+      <path value="$PROJECT_DIR$/vendor/paragonie/random_compat" />
+      <path value="$PROJECT_DIR$/vendor/setasign/fpdi" />
+      <path value="$PROJECT_DIR$/vendor/composer" />
+      <path value="$PROJECT_DIR$/application/third_party/plivo/vendor/guzzlehttp/promises" />
+      <path value="$PROJECT_DIR$/application/third_party/plivo/vendor/guzzlehttp/psr7" />
+      <path value="$PROJECT_DIR$/application/third_party/plivo/vendor/guzzlehttp/guzzle" />
+      <path value="$PROJECT_DIR$/application/third_party/plivo/vendor/plivo/plivo-php" />
+      <path value="$PROJECT_DIR$/application/third_party/plivo/vendor/composer" />
+      <path value="$PROJECT_DIR$/application/third_party/plivo/vendor/psr/http-message" />
+      <path value="$PROJECT_DIR$/application/third_party/plivo/vendor/ralouphie/getallheaders" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/erusev/parsedown" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/pimple/pimple" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/jms/metadata" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/jms/parser-lib" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/jms/serializer" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/monolog/monolog" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpunit/php-timer" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpunit/phpunit-mock-objects" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpunit/phpunit" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpunit/php-text-template" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpunit/php-file-iterator" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpunit/php-token-stream" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpunit/php-code-coverage" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/zendframework/zend-servicemanager" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/zendframework/zend-eventmanager" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/zendframework/zend-config" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/zendframework/zend-stdlib" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/zendframework/zend-json" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/zendframework/zend-cache" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/justinrainbow/json-schema" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/zendframework/zend-serializer" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/zendframework/zend-i18n" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/zendframework/zend-filter" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/zendframework/zend-hydrator" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/cilex/cilex" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/cilex/console-service-provider" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpoption/phpoption" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/psr/log" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/seld/jsonlint" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpspec/prophecy" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpcollection/phpcollection" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/sebastian/recursion-context" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/sebastian/diff" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/sebastian/comparator" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/sebastian/global-state" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/sebastian/environment" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/sebastian/exporter" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/sebastian/version" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/zetacomponents/base" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/zetacomponents/document" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/container-interop/container-interop" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/twig/twig" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/herrera-io/phar-update" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/doctrine/lexer" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/herrera-io/json" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/composer" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/doctrine/instantiator" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/doctrine/annotations" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpdocumentor/fileset" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/symfony/config" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpdocumentor/reflection" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/nikic/php-parser" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/symfony/finder" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpdocumentor/graphviz" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/kherge/version" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/symfony/console" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpdocumentor/reflection-docblock" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/symfony/stopwatch" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/phpdocumentor/phpdocumentor" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/symfony/validator" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/symfony/event-dispatcher" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/symfony/filesystem" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/symfony/yaml" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/symfony/translation" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/symfony/process" />
+      <path value="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/symfony/polyfill-mbstring" />
+      <path value="$PROJECT_DIR$/vendor/symfony/deprecation-contracts" />
+      <path value="$PROJECT_DIR$/vendor/rize/uri-template" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-mbstring" />
+      <path value="$PROJECT_DIR$/vendor/brick/math" />
+      <path value="$PROJECT_DIR$/vendor/fig/http-message-util" />
+      <path value="$PROJECT_DIR$/vendor/monolog/monolog" />
+      <path value="$PROJECT_DIR$/vendor/lcobucci/jwt" />
+      <path value="$PROJECT_DIR$/vendor/guzzlehttp/promises" />
+      <path value="$PROJECT_DIR$/vendor/guzzlehttp/psr7" />
+      <path value="$PROJECT_DIR$/vendor/guzzlehttp/guzzle" />
+      <path value="$PROJECT_DIR$/vendor/ramsey/collection" />
+      <path value="$PROJECT_DIR$/vendor/ramsey/uuid" />
+      <path value="$PROJECT_DIR$/vendor/google/common-protos" />
+      <path value="$PROJECT_DIR$/vendor/google/auth" />
+      <path value="$PROJECT_DIR$/vendor/ralouphie/getallheaders" />
+      <path value="$PROJECT_DIR$/vendor/google/longrunning" />
+      <path value="$PROJECT_DIR$/vendor/google/gax" />
+      <path value="$PROJECT_DIR$/vendor/google/cloud-storage" />
+      <path value="$PROJECT_DIR$/vendor/google/grpc-gcp" />
+      <path value="$PROJECT_DIR$/vendor/kreait/firebase-tokens" />
+      <path value="$PROJECT_DIR$/vendor/google/protobuf" />
+      <path value="$PROJECT_DIR$/vendor/kreait/firebase-php" />
+      <path value="$PROJECT_DIR$/vendor/google/cloud-core" />
+      <path value="$PROJECT_DIR$/vendor/firebase/php-jwt" />
+      <path value="$PROJECT_DIR$/vendor/mtdowling/jmespath.php" />
+      <path value="$PROJECT_DIR$/vendor/grpc/grpc" />
+      <path value="$PROJECT_DIR$/vendor/psr/http-factory" />
+      <path value="$PROJECT_DIR$/vendor/psr/http-client" />
+      <path value="$PROJECT_DIR$/vendor/psr/http-message" />
+      <path value="$PROJECT_DIR$/vendor/psr/cache" />
+      <path value="$PROJECT_DIR$/vendor/psr/clock" />
+      <path value="$PROJECT_DIR$/vendor/stella-maris/clock" />
+      <path value="$PROJECT_DIR$/vendor/riverline/multipart-parser" />
+      <path value="$PROJECT_DIR$/vendor/psr/simple-cache" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-ctype" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php80" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php81" />
+      <path value="$PROJECT_DIR$/vendor/lcobucci/clock" />
+      <path value="$PROJECT_DIR$/vendor/kreait/clock" />
+    </include_path>
+  </component>
+  <component name="PhpProjectSharedConfiguration" php_language_level="8.0">
+    <option name="suggestChangeDefaultLanguageLevel" value="false" />
+  </component>
+  <component name="PhpStanOptionsConfiguration">
+    <option name="transferred" value="true" />
+  </component>
+  <component name="PhpUnit">
+    <phpunit_settings>
+      <PhpUnitSettings custom_loader_path="$PROJECT_DIR$/application/third_party/PHPMailer/vendor/autoload.php" />
+      <PhpUnitSettings custom_loader_path="$PROJECT_DIR$/vendor/autoload.php" />
+    </phpunit_settings>
+  </component>
+  <component name="PsalmOptionsConfiguration">
+    <option name="transferred" value="true" />
+  </component>
+</project>

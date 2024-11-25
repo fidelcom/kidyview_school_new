@@ -149,9 +149,9 @@ else {
 $db['emojidb'] = array(
 	'dsn'	=> '',
 	'hostname' => 'localhost',
-	'username' => 'chawtech_kidyview',
-	'password' => 'xxbvCPstxgww',
-	'database' => 'chawtech_kiddyVewDevlopment',
+	'username' => 'root',
+	'password' => '',
+	'database' => 'kvlc',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,

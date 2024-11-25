@@ -19,6 +19,9 @@
 			$this->load->library("security");
 			$this->load->model(array('teachers/Teacher_model','Project_model'));
 			$this->load->library('settings');
+            $this->load->library('firebases');
+            $this->load->library('fcm');
+            $this->load->model('parent/Parent_model');
 		}
 		
 	public function getProjectList_post() {
@@ -252,6 +255,12 @@
 					$pnotificationData['url'] = "project-detail/".$encryptedUrl;
 					$isParentNotify=notificationSettingHelper($postData['school_id'],$pnotificationData['receiver_id'],'Project');
 					if(!empty($isParentNotify) && $isParentNotify->is_push==1){
+                        $result = $this->Parent_model->parentFCMID($getParentData->id);
+                        $tokenData = $this->db->get_where('user_token', ['user_id' => $getParentData->id])->row();
+                        $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                        $message = $postData['message'];
+                        $title = $postData['title']." project created for your child.";
+                        $this->firebases->sendNotification($token, $title, $message);
 					$this->Teacher_model->add($pnotificationData,'notifications');
 					}
 					/* Email to child */

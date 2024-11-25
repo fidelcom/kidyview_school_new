@@ -1,0 +1,4 @@
+<?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
+
+ERROR - 2024-11-23 23:41:14 --> Severity: Core Warning --> PHP Startup: Unable to load dynamic library 'mbstring' (tried: /opt/homebrew/lib/php/pecl/20190902/mbstring (dlopen(/opt/homebrew/lib/php/pecl/20190902/mbstring, 0x0009): tried: '/opt/homebrew/lib/php/pecl/20190902/mbstring' (no such file), '/System/Volumes/Preboot/Cryptexes/OS/opt/homebrew/lib/php/pecl/20190902/mbstring' (no such file), '/opt/homebrew/lib/php/pecl/20190902/mbstring' (no such file)), /opt/homebrew/lib/php/pecl/20190902/mbstring.so (dlopen(/opt/homebrew/lib/php/pecl/20190902/mbstring.so, 0x0009): tried: '/opt/homebrew/lib/php/pecl/20190902/mbstring.so' (no such file), '/System/Volumes/Preboot/Cryptexes/OS/opt/homebrew/lib/php/pecl/20190902/mbstring.so' (no such file), '/opt/homebrew/lib/php/pecl/20190902/mbstring.so' (no such file))) Unknown 0
+ERROR - 2024-11-23 23:41:14 --> 404 Page Not Found: /index

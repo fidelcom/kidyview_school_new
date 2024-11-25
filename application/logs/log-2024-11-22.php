@@ -1,0 +1,8 @@
+<?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
+
+ERROR - 2024-11-22 16:37:20 --> 404 Page Not Found: /index
+ERROR - 2024-11-22 16:37:24 --> Severity: Notice --> Undefined index: class_id /Users/secureview/Downloads/kidyview_school_new/application/controllers/api/User.php 5514
+ERROR - 2024-11-22 16:43:57 --> Severity: Notice --> Undefined index: class_id /Users/secureview/Downloads/kidyview_school_new/application/controllers/api/User.php 5514
+ERROR - 2024-11-22 16:48:44 --> Severity: Notice --> Trying to get property 'id' of non-object /Users/secureview/Downloads/kidyview_school_new/application/controllers/api/User.php 1934
+ERROR - 2024-11-22 22:39:16 --> Severity: Core Warning --> PHP Startup: Unable to load dynamic library 'mbstring' (tried: /opt/homebrew/lib/php/pecl/20190902/mbstring (dlopen(/opt/homebrew/lib/php/pecl/20190902/mbstring, 0x0009): tried: '/opt/homebrew/lib/php/pecl/20190902/mbstring' (no such file), '/System/Volumes/Preboot/Cryptexes/OS/opt/homebrew/lib/php/pecl/20190902/mbstring' (no such file), '/opt/homebrew/lib/php/pecl/20190902/mbstring' (no such file)), /opt/homebrew/lib/php/pecl/20190902/mbstring.so (dlopen(/opt/homebrew/lib/php/pecl/20190902/mbstring.so, 0x0009): tried: '/opt/homebrew/lib/php/pecl/20190902/mbstring.so' (no such file), '/System/Volumes/Preboot/Cryptexes/OS/opt/homebrew/lib/php/pecl/20190902/mbstring.so' (no such file), '/opt/homebrew/lib/php/pecl/20190902/mbstring.so' (no such file))) Unknown 0
+ERROR - 2024-11-22 22:43:39 --> Severity: Notice --> Undefined index: class_id /Users/secureview/Downloads/kidyview_school_new/application/controllers/api/User.php 5517

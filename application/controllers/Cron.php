@@ -5,6 +5,13 @@ require APPPATH . '/libraries/crypto/autoload.php';
 use Blocktrail\CryptoJSAES\CryptoJSAES;
 class Cron extends CI_Controller {
 
+    public function __construct() {
+        parent::__construct();
+        $this->load->library('fcm');
+        $this->load->library('firebases');
+        $this->load->model('parent/Parent_model');
+    }
+
     /*Cron for start asignment*/
     public function getTodayAssignmentNotification() {
         $date=date('Y-m-d');
@@ -40,6 +47,12 @@ class Cron extends CI_Controller {
                         $notificationData['url'] = "assignment-detail/".$encryptedUrl;
                         if(!empty($isNotify) && $isNotify->is_push==1){
                         $this->Teacher_model->add($notificationData,'notifications');
+                            $result = $this->Parent_model->parentFCMID($studentData['id']);
+//                        var_dump($result);
+                            $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                            $message = $notificationData['message'];
+                            $title = "Assignment";
+                            $this->firebases->sendNotification($token, $title, $message);
                         }
                         $getParentData=$this->Teacher_model->getParentData($studentData['id']);
                         if($getParentData){
@@ -52,6 +65,12 @@ class Cron extends CI_Controller {
                         $isParentNotify=notificationSettingHelper($assignmentData[$i]['school_id'],$pnotificationData['receiver_id'],'Assignment');
                         if(!empty($isParentNotify) && $isParentNotify->is_push==1){
                         $this->Teacher_model->add($pnotificationData,'notifications');
+                            $result = $this->Parent_model->parentFCMID($getParentData->id);
+//                        var_dump($result);
+                            $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                            $message = $notificationData['message'];
+                            $title = "Assignment";
+                            $this->firebases->sendNotification($token, $title, $message);
                         }
                         /* Email to child */
                         //$studentEmail=$studentData['childemail'];
@@ -133,6 +152,12 @@ class Cron extends CI_Controller {
                         $isParentNotify=notificationSettingHelper($assignmentData[$i]['school_id'],$pnotificationData['receiver_id'],'Project');
                         if(!empty($isParentNotify) && $isParentNotify->is_push==1){
                         $this->Teacher_model->add($pnotificationData,'notifications');
+                            $result = $this->Parent_model->parentFCMID($getParentData->id);
+//                        var_dump($result);
+                            $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                            $message = $notificationData['message'];
+                            $title = "Assignment";
+                            $this->firebases->sendNotification($token, $title, $message);
                         }
                         /* Email to child */
                         /* $studentEmail=$studentData['childemail'];
@@ -211,6 +236,7 @@ class Cron extends CI_Controller {
                         $isParentNotify=notificationSettingHelper($assignmentData[$i]['school_id'],$pnotificationData['receiver_id'],'Assignment');
                         if(!empty($isParentNotify) && $isParentNotify->is_push==1){
                         $this->Teacher_model->add($pnotificationData,'notifications');
+
                         }
                         /* Email to child */
                        /* $studentEmail=$studentData['childemail'];
@@ -289,6 +315,12 @@ class Cron extends CI_Controller {
                         $isParentNotify=notificationSettingHelper($assignmentData[$i]['school_id'],$pnotificationData['receiver_id'],'Project');
                         if(!empty($isParentNotify) && $isParentNotify->is_push==1){
                         $this->Teacher_model->add($pnotificationData,'notifications');
+                            $result = $this->Parent_model->parentFCMID($getParentData->id);
+//                        var_dump($result);
+                            $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                            $message = $notificationData['message'];
+                            $title = "Assignment";
+                            $this->firebases->sendNotification($token, $title, $message);
                         }
                         /* Email to child */
                         /*
@@ -368,6 +400,12 @@ class Cron extends CI_Controller {
                         $isParentNotify=notificationSettingHelper($assignmentData[$i]['school_id'],$pnotificationData['receiver_id'],'Assignment');
                         if(!empty($isParentNotify) && $isParentNotify->is_push==1){
                         $this->Teacher_model->add($pnotificationData,'notifications');
+                            $result = $this->Parent_model->parentFCMID($getParentData->id);
+//                        var_dump($result);
+                            $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                            $message = $notificationData['message'];
+                            $title = "Assignment";
+                            $this->firebases->sendNotification($token, $title, $message);
                         }
                         /* Email to child */
                         /*
@@ -446,6 +484,12 @@ class Cron extends CI_Controller {
                         $isParentNotify=notificationSettingHelper($assignmentData[$i]['school_id'],$pnotificationData['receiver_id'],'Project');
                         if(!empty($isParentNotify) && $isParentNotify->is_push==1){
                         $this->Teacher_model->add($pnotificationData,'notifications');
+                            $result = $this->Parent_model->parentFCMID($getParentData->id);
+//                        var_dump($result);
+                            $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                            $message = $notificationData['message'];
+                            $title = "Assignment";
+                            $this->firebases->sendNotification($token, $title, $message);
                         }
                         /* Email to child */
                         /*
@@ -529,9 +573,15 @@ class Cron extends CI_Controller {
                             $pnotificationData['message'] = "24 hours left for ".$examData[$i]['name']." to submission.";
                             $pnotificationData['type'] = "exam";
                             $pnotificationData['url'] = "exam-details/".$encryptedUrl;
-                        $isParentNotify=notificationSettingHelper($assignmentData[$i]['school_id'],$pnotificationData['receiver_id'],'Project');
+                        $isParentNotify=notificationSettingHelper($examData[$i]['school_id'],$pnotificationData['receiver_id'],'Project');
                         if(!empty($isParentNotify) && $isParentNotify->is_push==1){
                         $this->Teacher_model->add($pnotificationData,'notifications');
+                            $result = $this->Parent_model->parentFCMID($getParentData->id);
+//                        var_dump($result);
+                            $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                            $message = $notificationData['message'];
+                            $title = "Assignment";
+                            $this->firebases->sendNotification($token, $title, $message);
                         }
                         /* Email to parent */
                         if($getParentData->fatheremail!=''){
@@ -606,9 +656,15 @@ class Cron extends CI_Controller {
                             $pnotificationData['message'] = "24 hours left for ".$examData[$i]['name']." to submission.";
                             $pnotificationData['type'] = "exam";
                             $pnotificationData['url'] = "exam-details/".$encryptedUrl;
-                        $isParentNotify=notificationSettingHelper($assignmentData[$i]['school_id'],$pnotificationData['receiver_id'],'Project');
+                        $isParentNotify=notificationSettingHelper($examData[$i]['school_id'],$pnotificationData['receiver_id'],'Project');
                         if(!empty($isParentNotify) && $isParentNotify->is_push==1){
                         $this->Teacher_model->add($pnotificationData,'notifications');
+                            $result = $this->Parent_model->parentFCMID($getParentData->id);
+//                        var_dump($result);
+                            $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                            $message = $notificationData['message'];
+                            $title = "Assignment";
+                            $this->firebases->sendNotification($token, $title, $message);
                         }
                         /* Email to parent */
                         if($getParentData->fatheremail!=''){

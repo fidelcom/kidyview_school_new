@@ -20,6 +20,7 @@ class StudentCheckout extends REST_Controller {
         $this->load->model('parent/Parent_model');
         $this->load->helper('common_helper');
          $this->load->library('fcm');
+        $this->load->library('firebases');
     }
     
     public function guardiansList($parent_id){
@@ -86,6 +87,7 @@ class StudentCheckout extends REST_Controller {
 						               // $token = 'e_XuB0zl9EsKpsuGMUUcgD:APA91bGJ7OVHdk4aU2vprokUGrbDSkHjM0L84dxs4d2H5bSJkhn3cHd4a8IqUVvlYeb5jmVJxAWeqqaEWIitrP4yHfUPOuUxCit1hsNFXRTTSMV9msZQ7kJKszYV19KQPgGuxew7PYR4';  // iOS 
 						            $message = $otp . " is your otp checkout code for $childName ($childRegisterId). OTP is confidential.";
 						            $title = "Student checkout notification";
+                            $this->firebases->sendNotification($token, $title, $message);
 						            $notify =  $this->fcm->sendPushNotification($token, $title, $message);
 						        // echo $notify;
 						        // prd($notify);  die;
@@ -170,6 +172,7 @@ class StudentCheckout extends REST_Controller {
 						               // $token = 'e_XuB0zl9EsKpsuGMUUcgD:APA91bGJ7OVHdk4aU2vprokUGrbDSkHjM0L84dxs4d2H5bSJkhn3cHd4a8IqUVvlYeb5jmVJxAWeqqaEWIitrP4yHfUPOuUxCit1hsNFXRTTSMV9msZQ7kJKszYV19KQPgGuxew7PYR4';  // iOS 
 						            $message = $otp . " is your otp checkout code for $childName ($childRegisterId). OTP is confidential.";
 						            $title = "Student checkout notification";
+                                    $this->firebases->sendNotification($token, $title, $message);
 						            $notify =  $this->fcm->sendPushNotification($token, $title, $message);
 						        // echo $notify; die;
 						        // prd($notify);

@@ -14,6 +14,9 @@ class Assignment extends REST_Controller {
         $this->load->library('form_validation');
         $this->load->model('assignment_model');
         $this->load->helper('common_helper');
+        $this->load->library('firebases');
+        $this->load->library('fcm');
+        $this->load->model('parent/Parent_model');
     }
     
     public function index_get(){
@@ -220,6 +223,12 @@ class Assignment extends REST_Controller {
 					//$isParentNotify=notificationSettingHelper($this->token->school_id,$pnotificationData['receiver_id'],'Assignment');
 					//if(!empty($isParentNotify) && $isParentNotify->is_push==1){
 					$this->Teacher_model->add($pnotificationData,'notifications');
+                        $result = $this->Parent_model->parentFCMID($getParentData->id);
+                        $tokenData = $this->db->get_where('user_token', ['user_id' => $getParentData->id])->row();
+                        $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                        $message = $postData['message'];
+                        $title = "Your New assignment";
+                        $this->firebases->sendNotification($token, $title, $message);
 					//}
 					
 					/* Email to parent */

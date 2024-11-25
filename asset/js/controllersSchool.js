@@ -16141,7 +16141,7 @@ function addMessageCtrl($scope, $http, $routeParams, $timeout, $compile, $window
 		}
 		
 		var formData = new FormData();
-		formData.append('user', $scope.user);
+		formData.append('user', JSON.stringify($scope.user));
 		formData.append('message', $scope.message);
 		formData.append('schoolId', School_ID);
 		

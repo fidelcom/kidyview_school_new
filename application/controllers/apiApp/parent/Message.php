@@ -11,9 +11,12 @@ class Message extends REST_Controller {
         parent::__construct();
         $this->token->parent_validate();
         $this->load->library("security");
+        $this->load->library('firebases');
+        $this->load->library('fcm');
         $this->load->library('form_validation');
         $this->load->model('parent/message_model');
         $this->load->helper('common_helper');
+        $this->load->model('parent/Parent_model');
     }
     
     public function list_get(){
@@ -102,6 +105,13 @@ class Message extends REST_Controller {
                 $formData['sender'] = "P-".$this->token->user_id;
                 $formData['created_date'] = date("Y-m-d H:i:s");
                 $dataid = $this->message_model->addMessage($formData);
+
+                // Send Push Notification
+                $tokenData = $this->db->get_where('user_token', ['user_id' => $reciever])->row();
+                if ($tokenData) {
+                    $this->sendPushNotification($tokenData->token, "New Message", $postData['message']);
+                }
+
                 if (!empty($arrFiles)) {
                     foreach ($arrFiles as $photoData)
                     {
@@ -122,7 +132,7 @@ class Message extends REST_Controller {
                 $notificationData['receiver_id'] = $user;
                 $notificationData['sender_id'] = "P-".$this->token->user_id;
                 $notificationData['to_do_id'] = $dataid;
-                $notificationData['message'] = "Parent initiate chat meaasge for you.";
+                $notificationData['message'] = "Parent initiate chat message for you.";
                 $notificationData['type'] = "chat";
                 if(!empty($isNotify) && $isNotify->user_type=='school'){
                 $notificationData['url'] = "all-conversation/".$encryptedUrl;
@@ -131,6 +141,17 @@ class Message extends REST_Controller {
                 }
                 if(!empty($isNotify) && $isNotify->is_push==1){
                 $this->Teacher_model->add($notificationData,'notifications');
+                    $tk = explode('-', $user);
+//                        var_dump($tk);
+                    $result = $this->Parent_model->parentFCMID($tk[1]);
+                    $tokenData = $this->db->get_where('user_token', ['user_id' => $tk[1]])->row();
+//                        var_dump($result);
+                    $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                    $message = $postData['message'];
+                    $title = "A Parent initiate chat message for you";
+                    $this->firebases->sendNotification($token, $title, $message);
+//                        $this->model->add($notificationData, 'notifications');
+//                    $notify =  $this->fcm->sendPushNotification($token, $title, $message);
                 }
                 $schoolEmail='';
                 $schoolData=getSchoolDetails($this->token->school_id);
@@ -219,5 +240,38 @@ class Message extends REST_Controller {
             $return['error'] = $this->error;
             $this->response($return, REST_Controller::HTTP_OK);
         }
+    }
+
+    private function sendPushNotification($token, $title, $body) {
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $serverKey = 'AAAA-yhUx78:APA91bEfw76JlVWCTr70GIc2kXpzQyrJcIm-3e0P1EH_gLKMBvR3Y4OH4ogdidklZFOQM5sIRjfYduppdefXBl7MVyeHqGZMj31e3nA6zKb_7oS7aSSOXpHU7d2iTj9d0u8PsPXLHYXo'; // Replace with your actual Firebase server key
+
+        $notification = [
+            'title' => $title,
+            'body' => $body,
+            'sound' => 'default'
+        ];
+        $data = [
+            'to' => $token,
+            'notification' => $notification
+        ];
+
+        $headers = [
+            'Authorization: key=' . $serverKey,
+            'Content-Type: application/json'
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+        $result = curl_exec($ch);
+        if ($result === FALSE) {
+            die('Curl failed: ' . curl_error($ch));
+        }
+        curl_close($ch);
     }
 }

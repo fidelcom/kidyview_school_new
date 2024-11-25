@@ -311,8 +311,33 @@ class Auth extends REST_Controller {
         if(($otp == '123456') || ($otp == '123456' && isset($otpData->fatheremail) && isset($otpData->motheremail)  && ($otpData->fatheremail=='kabirsharma759@gmail.com' || $otpData->motheremail=='kabirsharma759@gmail.com')))
         $result = $otpData;
         else
-        $result = $this->user->isotpvalid($otp, $user_id); 
-        
+        $result = $this->user->isotpvalid($otp, $user_id);
+
+        if ($result) {
+            $userID = 'P-' . $otpData->id;
+            $moduleData = array('Event', 'Chat', 'Assignment', 'Project', 'Exam', 'Class Board', 'Class Schedule');
+
+            // Check if notification settings already exist for the user
+            $existingSettings = $this->db->where('user_id', $userID)->get('notification_settings')->result();
+
+            if (empty($existingSettings)) {
+                // If no existing settings, create new ones
+                $settingArray = array();
+                $i = 0;
+                foreach ($moduleData as $module) {
+                    $settingArray[$i]['module_name'] = $module;
+                    $settingArray[$i]['school_id'] = $otpData->schoolId;
+                    $settingArray[$i]['user_id'] = $userID;
+                    $settingArray[$i]['user_type'] = 'parent';
+                    $settingArray[$i]['is_web'] = '1';
+                    $settingArray[$i]['is_push'] = '1';
+                    $i++;
+                }
+                $this->db->insert_batch('notification_settings', $settingArray);
+            }
+        }
+
+
         if ($result) {
             
             $additional_data = array(

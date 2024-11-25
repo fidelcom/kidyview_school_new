@@ -23,6 +23,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
+$config['firebase_credentials'] = BASEPATH . '../kidyviewcts-firebase-adminsdk-6plnh-cdcae1a853.json';
 
 $http = "http";
 if(isset($_SERVER['HTTPS'] ))
@@ -33,8 +34,9 @@ if(isset($_SERVER['HTTPS'] ))
     }
 }
 
-$config["base_url"] = $http."://".$_SERVER['HTTP_HOST'].str_replace("\\",'/',dirname($_SERVER["SCRIPT_NAME"]));
+// $config["base_url"] = $http."://".$_SERVER['HTTP_HOST'].str_replace("\\",'/',dirname($_SERVER["SCRIPT_NAME"]));
 
+$config["base_url"] = 'http://localhost:8000';
 /*
 |--------------------------------------------------------------------------
 | Index File

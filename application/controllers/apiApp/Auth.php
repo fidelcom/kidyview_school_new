@@ -330,6 +330,31 @@ class Auth extends REST_Controller {
         //echo '<pre>';print_R($result); die;
 
         if ($result) {
+            $userID = 'T-' . $otpData->id;
+            $moduleData = array('Event', 'Chat', 'Assignment', 'Project', 'Exam', 'Class Board', 'Class Schedule');
+
+            // Check if notification settings already exist for the user
+            $existingSettings = $this->db->where('user_id', $userID)->get('notification_settings')->result();
+
+            if (empty($existingSettings)) {
+                // If no existing settings, create new ones
+                $settingArray = array();
+                $i = 0;
+                foreach ($moduleData as $module) {
+                    $settingArray[$i]['module_name'] = $module;
+                    $settingArray[$i]['school_id'] = $otpData->schoolId;
+                    $settingArray[$i]['user_id'] = $userID;
+                    $settingArray[$i]['user_type'] = 'teacher';
+                    $settingArray[$i]['is_web'] = '1';
+                    $settingArray[$i]['is_push'] = '1';
+                    $i++;
+                }
+                $this->db->insert_batch('notification_settings', $settingArray);
+            }
+        }
+
+
+        if ($result) {
             $this->load->library('user_agent');
             if ($this->agent->is_browser()) {
                 $agent = $this->agent->browser();

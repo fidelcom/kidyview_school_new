@@ -17,6 +17,9 @@
 			$this->load->library("security");
 			$this->load->model(array('teachers/Teacher_model','teachers/Project_model',));
 			$this->load->library('settings');
+            $this->load->library('fcm');
+            $this->load->library('firebases');
+            $this->load->model('parent/Parent_model');
 		}
 		
 	public function getProjectList_post() {
@@ -252,6 +255,12 @@
 					$isParentNotify=notificationSettingHelper($postData['school_id'],$pnotificationData['receiver_id'],'Project');
 					//if(!empty($isParentNotify) && $isParentNotify->is_push==1){
 					$this->Teacher_model->add($pnotificationData,'notifications');
+                        $result = $this->Parent_model->parentFCMID($getParentData->id);
+//                        var_dump($result);
+                        $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                        $message = $notificationData['message'];
+                        $title = "Project";
+                        $this->firebases->sendNotification($token, $title, $message);
 					//}
 					/* Email to child */
 					$studentEmail=$studentData['childemail'];
@@ -668,6 +677,12 @@
 				$isParentNotify=notificationSettingHelper($postData['school_id'],$pnotificationData['receiver_id'],'Project');
 				if(!empty($isParentNotify) && $isParentNotify->is_push==1){
 				$this->Teacher_model->add($pnotificationData,'notifications');
+                    $result = $this->Parent_model->parentFCMID($getParentData->id);
+//                        var_dump($result);
+                    $token = !empty($result->fcm_key) ? $result->fcm_key : '';
+                    $message = $notificationData['message'];
+                    $title = "Project";
+                    $this->firebases->sendNotification($token, $title, $message);
 				}
 				
 				/* Email to parent */

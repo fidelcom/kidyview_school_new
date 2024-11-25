@@ -1,6 +1,8 @@
 {
     "require": {
         "mpdf/mpdf": "^8.0",
-        "twilio/sdk": "^6.37"
+        "twilio/sdk": "^6.37",
+      "ext-curl": "*",
+        "kreait/firebase-php": "^5.26"
     }
 }
